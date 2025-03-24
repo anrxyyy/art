@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Перформанс</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: black;
+        }
+        video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+        }
+        .soundButton {
+            position: absolute;
+            bottom: 400px; /* Подняли кнопку на 400px */
+            left: 50%;
+            transform: translateX(-50%); /* Центрируем по горизонтали */
+            cursor: pointer;
+            background: transparent;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <video id="video" autoplay loop muted>
+        <source src="0324.mp4" type="video/mp4">
+        Ваш браузер не поддерживает видео.
+    </video>
+    
+    <!-- Убедитесь, что путь к изображению правильный -->
+    <img src="button-image.png" id="soundButton" class="soundButton" alt="Включить звук">
+    
+    <script>
+        const video = document.getElementById("video");
+        const button = document.getElementById("soundButton");
+
+        let buttons = [button];  // Начальная кнопка
+        let maxButtons = 100; // Ограничение на количество кнопок
+
+        button.addEventListener("click", () => {
+            video.muted = false;
+            video.volume = 1.0;
+            video.currentTime = 0; // Сбрасываем видео на начало
+            video.play();
+
+            // Убираем все кнопки после нажатия
+            buttons.forEach(btn => btn.remove()); // Удаляем кнопки с страницы
+            buttons = []; // Очищаем массив кнопок
+        });
+
+        // Функция для создания новых кнопок в случайных направлениях
+        function createNewButtons(baseButton) {
+            const distance = 60; // Расстояние для смещения кнопок
+
+            // Генерируем случайные углы для направления новых кнопок
+            const randomAngle1 = Math.random() * 2 * Math.PI; // Случайный угол для первой кнопки
+            const randomAngle2 = Math.random() * 2 * Math.PI; // Случайный угол для второй кнопки
+
+            // Координаты для новых кнопок относительно окна
+            const xOffset1 = distance * Math.cos(randomAngle1);
+            const yOffset1 = distance * Math.sin(randomAngle1);
+
+            const xOffset2 = distance * Math.cos(randomAngle2);
+            const yOffset2 = distance * Math.sin(randomAngle2);
+
+            // Создаем новые кнопки
+            const button1 = document.createElement("img");
+            const button2 = document.createElement("img");
+
+            button1.classList.add("soundButton");
+            button2.classList.add("soundButton");
+
+            button1.src = baseButton.src; // Используем изображение из родительской кнопки
+            button2.src = baseButton.src;
+
+            // Позиционируем их в случайных направлениях относительно окна
+            button1.style.position = "absolute";
+            button2.style.position = "absolute";
+
+            // Начальные координаты для новых кнопок (относительно окна)
+            button1.style.left = `${baseButton.offsetLeft + xOffset1}px`;
+            button1.style.top = `${baseButton.offsetTop + yOffset1}px`;
+
+            button2.style.left = `${baseButton.offsetLeft + xOffset2}px`;
+            button2.style.top = `${baseButton.offsetTop + yOffset2}px`;
+
+            // Добавляем новые кнопки на страницу
+            document.body.appendChild(button1);
+            document.body.appendChild(button2);
+
+            // Добавляем новые кнопки в список
+            buttons.push(button1, button2);
+
+            // Добавляем обработчик событий на новые кнопки
+            button1.addEventListener("click", buttonClickHandler);
+            button2.addEventListener("click", buttonClickHandler);
+        }
+
+        // Обработчик нажатия кнопки
+        function buttonClickHandler() {
+            video.muted = false;
+            video.volume = 1.0;
+            video.currentTime = 0; // Сбрасываем видео на начало
+            video.play();
+
+            // Убираем все кнопки после нажатия
+            buttons.forEach(btn => btn.remove()); // Удаляем кнопки с страницы
+            buttons = []; // Очищаем массив кнопок
+        }
+
+        // Функция для генерации новых кнопок от каждой существующей
+        function moveButtons() {
+            if (buttons.length >= maxButtons) return; // Прекращаем создание кнопок, если достигнут лимит
+
+            // Создаем новые кнопки от каждой существующей
+            buttons.forEach(button => {
+                createNewButtons(button);
+            });
+        }
+
+        setInterval(moveButtons, 1000); // Добавляем новые кнопки каждую секунду
+    </script>
+</body>
+</html>
