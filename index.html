@@ -29,113 +29,190 @@
         }
         .soundButton {
             position: absolute;
-            bottom: 400px; /* Подняли кнопку на 400px */
+            bottom: 400px;
             left: 50%;
-            transform: translateX(-50%); /* Центрируем по горизонтали */
+            transform: translateX(-50%);
             cursor: pointer;
             background: transparent;
             border: none;
+        }
+        #floatingText {
+            position: absolute;
+            top: 200px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            display: none;
+        }
+        .buttonGroup {
+            position: absolute;
+            left: 100px;
+            display: none;
+            flex-direction: column;
+        }
+        .menuButton {
+            width: 100px;
+            height: 100px; /* увеличил высоту кнопок, чтобы изображения не обрезались */
+            margin-bottom: 50px; /* увеличил расстояние между кнопками */
+            font-size: 18px;
+            cursor: pointer;
+            border: none;
+            background-color: transparent;
+            color: transparent;
+            text-align: center;
+            background-size: contain; /* изображения теперь будут полностью помещаться в кнопку */
+            background-repeat: no-repeat;
+            background-position: center;
+            position: relative; /* для относительного позиционирования полоски */
+        }
+
+        /* Стиль для кнопки B1 */
+        #buttonGroup .menuButton:nth-child(1) {
+            background-image: url('p1.png');
+                    }
+
+        /* Стиль для кнопки B2 */
+        #buttonGroup .menuButton:nth-child(2) {
+            background-image: url('p2.png');
+        }
+
+        /* Стиль для кнопки B3 */
+        #buttonGroup .menuButton:nth-child(3) {
+            background-image: url('p3.png');
+        }
+
+        /* Стиль для кнопки B4 */
+        #buttonGroup .menuButton:nth-child(4) {
+            background-image: url('p4.png');
+        }
+
+        /* Черная полоска, которая появляется при наведении */
+        .hoverStripe {
+            position: absolute;
+            top: 0;
+            left: -100px;
+            width: 100vw;
+            height: 100%;
+            background-color: black;
+            opacity: 0.4;
+            display: none;
+        }
+
+        /* Показываем полоску при наведении на кнопки */
+        .menuButton:hover .hoverStripe {
+            display: block;
         }
     </style>
 </head>
 <body>
     <video id="video" autoplay loop muted>
-        <source src="0324.mp4" type="video/mp4">
+        <source src="58013-486853042_small.mp4" type="video/mp4">
         Ваш браузер не поддерживает видео.
     </video>
-    
-    <!-- Убедитесь, что путь к изображению правильный -->
+
+    <audio id="audio" loop>
+        <source src="Aphex Twin - Ageispolis.mp3" type="audio/mp3">
+        Ваш браузер не поддерживает аудио.
+    </audio>
+
     <img src="button-image.png" id="soundButton" class="soundButton" alt="Включить звук">
-    
+
+    <img src="text1.png" id="floatingText" alt="Текстовое изображение">
+
+    <div id="buttonGroup" class="buttonGroup">
+        <button class="menuButton" >
+            B1
+            <div class="hoverStripe"></div> <!-- Черная полоска для кнопки B1 -->
+        </button>
+        <button class="menuButton" >
+            B2
+            <div class="hoverStripe"></div> <!-- Черная полоска для кнопки B2 -->
+        </button>
+        <button class="menuButton" >
+            B3
+            <div class="hoverStripe"></div> <!-- Черная полоска для кнопки B3 -->
+        </button>
+        <button class="menuButton" >
+            B4
+            <div class="hoverStripe"></div> <!-- Черная полоска для кнопки B4 -->
+        </button>
+    </div>
+
     <script>
         const video = document.getElementById("video");
-        const button = document.getElementById("soundButton");
+        const audio = document.getElementById("audio");
+        const floatingText = document.getElementById("floatingText");
+        const buttonGroup = document.getElementById("buttonGroup");
+        const firstButton = document.getElementById("soundButton");
 
-        let buttons = [button];  // Начальная кнопка
-        let maxButtons = 100; // Ограничение на количество кнопок
+        let buttons = [firstButton];
+        let maxButtons = 100;
+        let t = 0;
+        let buttonsActive = true;
 
-        button.addEventListener("click", () => {
-            video.muted = false;
-            video.volume = 1.0;
-            video.currentTime = 0; // Сбрасываем видео на начало
-            video.play();
+        function createSoundButton(baseButton) {
+            if (!buttonsActive || buttons.length >= maxButtons) return;
 
-            // Убираем все кнопки после нажатия
-            buttons.forEach(btn => btn.remove()); // Удаляем кнопки с страницы
-            buttons = []; // Очищаем массив кнопок
-        });
+            const button = document.createElement("img");
+            button.src = "button-image.png";
+            button.classList.add("soundButton");
 
-        // Функция для создания новых кнопок в случайных направлениях
-        function createNewButtons(baseButton) {
-            const distance = 60; // Расстояние для смещения кнопок
+            const distance = 90;
+            const angle = Math.random() * 2 * Math.PI;
 
-            // Генерируем случайные углы для направления новых кнопок
-            const randomAngle1 = Math.random() * 2 * Math.PI; // Случайный угол для первой кнопки
-            const randomAngle2 = Math.random() * 2 * Math.PI; // Случайный угол для второй кнопки
+            button.style.position = "absolute";
+            button.style.left = `${baseButton.offsetLeft + distance * Math.cos(angle)}px`;
+            button.style.top = `${baseButton.offsetTop + distance * Math.sin(angle)}px`;
 
-            // Координаты для новых кнопок относительно окна
-            const xOffset1 = distance * Math.cos(randomAngle1);
-            const yOffset1 = distance * Math.sin(randomAngle1);
+            button.addEventListener("click", buttonClickHandler);
 
-            const xOffset2 = distance * Math.cos(randomAngle2);
-            const yOffset2 = distance * Math.sin(randomAngle2);
-
-            // Создаем новые кнопки
-            const button1 = document.createElement("img");
-            const button2 = document.createElement("img");
-
-            button1.classList.add("soundButton");
-            button2.classList.add("soundButton");
-
-            button1.src = baseButton.src; // Используем изображение из родительской кнопки
-            button2.src = baseButton.src;
-
-            // Позиционируем их в случайных направлениях относительно окна
-            button1.style.position = "absolute";
-            button2.style.position = "absolute";
-
-            // Начальные координаты для новых кнопок (относительно окна)
-            button1.style.left = `${baseButton.offsetLeft + xOffset1}px`;
-            button1.style.top = `${baseButton.offsetTop + yOffset1}px`;
-
-            button2.style.left = `${baseButton.offsetLeft + xOffset2}px`;
-            button2.style.top = `${baseButton.offsetTop + yOffset2}px`;
-
-            // Добавляем новые кнопки на страницу
-            document.body.appendChild(button1);
-            document.body.appendChild(button2);
-
-            // Добавляем новые кнопки в список
-            buttons.push(button1, button2);
-
-            // Добавляем обработчик событий на новые кнопки
-            button1.addEventListener("click", buttonClickHandler);
-            button2.addEventListener("click", buttonClickHandler);
+            document.body.appendChild(button);
+            buttons.push(button);
         }
 
-        // Обработчик нажатия кнопки
         function buttonClickHandler() {
             video.muted = false;
             video.volume = 1.0;
-            video.currentTime = 0; // Сбрасываем видео на начало
+            video.currentTime = 0;
             video.play();
+            audio.play();
+            floatingText.style.display = "block";
+            buttonGroup.style.display = "flex";
+            buttonsActive = false;
 
-            // Убираем все кнопки после нажатия
-            buttons.forEach(btn => btn.remove()); // Удаляем кнопки с страницы
-            buttons = []; // Очищаем массив кнопок
+            buttons.forEach(btn => btn.remove());
+            buttons = [];
+
+            animateInfinity();
         }
 
-        // Функция для генерации новых кнопок от каждой существующей
+        function animateInfinity() {
+            const amplitudeX = 100;
+            const amplitudeY = 50;
+            const centerX = window.innerWidth / 2 - floatingText.width / 2;
+            const centerY = 200;
+
+            function move() {
+                t += 0.02;
+                const x = amplitudeX * Math.sin(t * 2) + centerX;
+                const y = amplitudeY * Math.sin(t * 4) + centerY;
+
+                floatingText.style.left = `${x}px`;
+                floatingText.style.top = `${y}px`;
+
+                requestAnimationFrame(move);
+            }
+            move();
+        }
+
         function moveButtons() {
-            if (buttons.length >= maxButtons) return; // Прекращаем создание кнопок, если достигнут лимит
-
-            // Создаем новые кнопки от каждой существующей
-            buttons.forEach(button => {
-                createNewButtons(button);
-            });
+            if (!buttonsActive || buttons.length >= maxButtons) return;
+            buttons.forEach(button => createSoundButton(button));
         }
 
-        setInterval(moveButtons, 1000); // Добавляем новые кнопки каждую секунду
+        firstButton.addEventListener("click", buttonClickHandler);
+
+        setInterval(moveButtons, 1000);
     </script>
 </body>
 </html>
